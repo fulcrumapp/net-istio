@@ -1,0 +1,16 @@
+name: net-istio
+id: ari:cloud:compass:9233df39-e597-47e6-ab42-e07f4d48709c:component/30d7834e-f829-4e6c-9b1b-cc6d8c1e56c5/693bab32-cb00-4212-a8fa-879f61aed51e
+description: A Knative ingress controller for Istio.
+configVersion: 1
+typeId: SERVICE
+fields:
+  tier: 4
+links:
+  - name: null
+    type: REPOSITORY
+    url: https://github.com/fulcrumapp/net-istio
+relationships:
+  DEPENDS_ON: []
+labels:
+  - source:github
+customFields: null
