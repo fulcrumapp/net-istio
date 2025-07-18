@@ -96,7 +96,7 @@ func MakeMeshVirtualService(ing *v1alpha1.Ingress, gateways map[v1alpha1.Ingress
 }
 
 // MakeDelegateVirtualService creates a mesh Virtual Service
-func MakeDelegateVirtualService(ing *v1alpha1.Ingress, gateways map[v1alpha1.IngressVisibility]sets.Set[string]) *v1beta1.VirtualService {
+func MakeDelegateVirtualService(ing *v1alpha1.Ingress) *v1beta1.VirtualService {
 	emptyHosts := sets.New[string]()
 	vs := &v1beta1.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
@@ -130,7 +130,7 @@ func MakeVirtualServices(ing *v1alpha1.Ingress, gateways map[v1alpha1.IngressVis
 		vss = append(vss, meshVs)
 	}
 
-if delegateVs := MakeDelegateVirtualService(ing, gateways); delegateVs != nil {
+	if delegateVs := MakeDelegateVirtualService(ing); delegateVs != nil {
 		vss = append(vss, delegateVs)
 	}
 
