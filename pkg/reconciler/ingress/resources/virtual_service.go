@@ -130,8 +130,8 @@ func MakeVirtualServices(ing *v1alpha1.Ingress, gateways map[v1alpha1.IngressVis
 		vss = append(vss, meshVs)
 	}
 
-	if meshVs := MakeDelegateVirtualService(ing, gateways); meshVs != nil {
-		vss = append(vss, meshVs)
+if delegateVs := MakeDelegateVirtualService(ing, gateways); delegateVs != nil {
+		vss = append(vss, delegateVs)
 	}
 
 	requiredGatewayCount := 0
