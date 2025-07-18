@@ -95,6 +95,29 @@ func MakeMeshVirtualService(ing *v1alpha1.Ingress, gateways map[v1alpha1.Ingress
 	return vs
 }
 
+// MakeDelegateVirtualService creates a mesh Virtual Service
+func MakeDelegateVirtualService(ing *v1alpha1.Ingress, gateways map[v1alpha1.IngressVisibility]sets.Set[string]) *v1beta1.VirtualService {
+	emptyHosts := sets.New[string]()
+	vs := &v1beta1.VirtualService{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            names.DelegateVirtualService(ing),
+			Namespace:       VirtualServiceNamespace(ing),
+			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(ing)},
+			Annotations:     ing.GetAnnotations(),
+		},
+		Spec: *makeVirtualServiceSpec(ing, map[v1alpha1.IngressVisibility]sets.Set[string]{
+			v1alpha1.IngressVisibilityExternalIP:   sets.New("mesh"),
+			v1alpha1.IngressVisibilityClusterLocal: sets.New("mesh"),
+		}, emptyHosts),
+	}
+	// Populate the Ingress labels.
+	vs.Labels = kmeta.FilterMap(ing.GetLabels(), func(k string) bool {
+		return k != RouteLabelKey && k != RouteNamespaceLabelKey
+	})
+	vs.Labels[networking.IngressLabelKey] = ing.Name
+	return vs
+}
+
 // MakeVirtualServices creates a mesh VirtualService and a virtual service for each gateway
 func MakeVirtualServices(ing *v1alpha1.Ingress, gateways map[v1alpha1.IngressVisibility]sets.Set[string]) ([]*v1beta1.VirtualService, error) {
 	// Insert probe header
@@ -106,6 +129,11 @@ func MakeVirtualServices(ing *v1alpha1.Ingress, gateways map[v1alpha1.IngressVis
 	if meshVs := MakeMeshVirtualService(ing, gateways); meshVs != nil {
 		vss = append(vss, meshVs)
 	}
+
+	if meshVs := MakeDelegateVirtualService(ing, gateways); meshVs != nil {
+		vss = append(vss, meshVs)
+	}
+
 	requiredGatewayCount := 0
 	if len(getPublicIngressRules(ing)) > 0 {
 		requiredGatewayCount += gateways[v1alpha1.IngressVisibilityExternalIP].Len()
